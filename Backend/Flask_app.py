@@ -9,7 +9,7 @@ import base64
 from flask_cors import CORS, cross_origin
 import openai
 from openai import OpenAI
-
+import fitz
 
 
 app = Flask(__name__)
@@ -23,6 +23,35 @@ def home():
         result = pipe(audio_1)
         return result["text"]
     
+    def extract_text_from_pdf_ignoring_footers(pdf_path, footer_threshold=50):
+        """
+        Extract text from a PDF, excluding footers based on a vertical threshold from the bottom of the page.
+        Print the slide (page) number before the content of that slide.
+
+        :param pdf_path: Path to the PDF file.
+        :param footer_threshold: Vertical distance from the bottom to identify and exclude footers.
+        """
+        document = fitz.open(pdf_path)
+        full_text = ""  # Initialize a variable to hold all text, for printing or other use
+
+        for page_num in range(len(document)):
+            page = document.load_page(page_num)
+            page_rect = page.rect
+            # Adjust content_region to exclude the footer area
+            #content_region = fitz.Rect(page_rect.x0, page_rect.y0, page_rect.x1, page_rect.y1 - footer_threshold)
+
+            # Extract text from the defined content region, excluding the footer
+            page_text = page.get_text()
+
+            # Format slide/page number text
+            slide_text = f"Slide {page_num + 1}:\n{page_text}\n"
+            print(slide_text)  # Print the slide number and its content
+
+            full_text += slide_text  # Optionally concatenate text for further use
+
+        document.close()
+        return full_text
+
 
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -51,9 +80,12 @@ def home():
 
     dataset = load_dataset("distil-whisper/librispeech_long", "clean", split="validation")
     sample = dataset[0]["audio"]
+    file_path = 'API_KEY.txt'
+    with open(file_path, 'r') as file:
+        api_key = file.read().strip() 
 
     data = request.get_json()
-    if("video" in data):
+    if("video" in data and data["video"]):
         if data["video"].startswith('data:video'):
             data["video"] = data["video"].split(',')[1]
 
@@ -65,9 +97,7 @@ def home():
             f.write(video_data)
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
-        file_path = 'API_KEY.txt'
-        with open(file_path, 'r') as file:
-            api_key = file.read().strip() 
+
         openai.api_key = api_key
         client = OpenAI(api_key=api_key)      
 
@@ -82,5 +112,35 @@ def home():
 
         return res
     
+    if("PDF" in data and data["PDF"]):
+        base64_data = data["PDF"].split(',', 1)[-1]
+
+        # Remove any potential unwanted characters (e.g., newlines, spaces)
+        base64_data_cleaned = base64_data.replace("\n", "").replace(" ", "")
+
+        # Decode the cleaned base64 string
+        decoded_data = base64.b64decode(base64_data_cleaned)
+
+        with open("PDFs/text.pdf", 'wb') as pdf_file:
+            pdf_file.write(decoded_data)
+        
+        full_text = extract_text_from_pdf_ignoring_footers("PDFs/text.pdf")
+
+        
+        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)      
+
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": full_text+" Summarize the entire presentation"}])   
+        res = {
+            "msg": response.choices[0].message.content
+        }    
+
+        return res
+        
+
 if __name__ == "__main__":
     app.run(debug=True)
