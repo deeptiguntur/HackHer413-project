@@ -1,0 +1,11 @@
+.header-container {
+    background-color: #2ab684;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    .title {
+        color: white;
+        font-size: 2rem;
+        margin-left: 2.5rem;
+    }
+}

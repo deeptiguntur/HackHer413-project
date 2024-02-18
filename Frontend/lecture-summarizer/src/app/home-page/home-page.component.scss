@@ -1,0 +1,79 @@
+.btn-container {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem 10rem;
+    input[type="file"] {
+        display: none;
+    }
+    .heading-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 1rem auto 5rem auto;
+        .heading {
+            font-size: 2.5rem;
+            display: flex;
+            margin: auto;
+            margin-bottom: 1rem;
+        }
+        .desc {
+            font-size: 1.5rem;
+        }
+    }
+    .upload {
+        display: flex;
+        justify-content: space-around;
+        .upload-btn {
+            height: 3rem;
+            width: 10rem;
+            box-shadow: 0px 4px 8px #0a164626;
+            background-color: #e7e7e7;
+            border: 1px solid #d6d6d6;
+            border-radius: 0.6rem;
+            display: inline-block;
+            padding: 14px 32px;
+            cursor: pointer;
+            &:hover {
+                background-color: #d6d6d6;
+            }
+            &:active {
+                background-color: #e7e7e7;
+            }
+        }
+        .upload-btn-pdf {
+            height: 3rem;
+            width: 10rem;
+            box-shadow: 0px 4px 8px #0a164626;
+            background-color: #e7e7e7;
+            border: 1px solid #d6d6d6;
+            border-radius: 0.6rem;
+            display: inline-block;
+            padding: 14px 38px;
+            cursor: pointer;
+            &:hover {
+                background-color: #d6d6d6;
+            }
+            &:active {
+                background-color: #e7e7e7;
+            }
+        }
+    }
+    .generate-btn {
+        width: fit-content;
+        margin: 3rem auto;
+        height: 3rem;
+        width: 10rem;
+        box-shadow: 0px 4px 8px #0a164626;
+        background-color: #2ab684;
+        border: 1px solid #2c936e;
+        border-radius: 0.3rem;
+        color: #fff;
+        cursor: pointer;
+        &:hover {
+            background-color: #249e75;
+        }
+        &:active {
+            background-color: #2ab684;
+        }
+    }
+}
