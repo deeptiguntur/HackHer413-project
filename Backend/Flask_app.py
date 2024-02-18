@@ -6,18 +6,25 @@ import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 from datasets import load_dataset
 import os
+import base64
+from flask_cors import CORS, cross_origin
+import openai
+from openai import OpenAI
 
-def video_summarizer(video,audio_1):
-    video = VideoFileClip(video)
-    audio = video.audio 
-    audio.write_audiofile(audio_1)
-    result = pipe(audio_1)
-    return result["text"]
+
 
 app = Flask(__name__)
-
+CORS(app)
 @app.route("/upload",methods = ['GET', 'POST'])
 def home():
+    def video_summarizer(video,audio_1):
+        video = VideoFileClip(video)
+        audio = video.audio 
+        audio.write_audiofile(audio_1)
+        result = pipe(audio_1)
+        return result["text"]
+    
+
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     torch.cuda.empty_cache()
@@ -46,12 +53,35 @@ def home():
     dataset = load_dataset("distil-whisper/librispeech_long", "clean", split="validation")
     sample = dataset[0]["audio"]
 
-    app.config['UPLOAD_FOLDER']="./Videos"
-    f = request.files['file']
-    f.filename = "Video.mp4"
-    f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-    text = video_summarizer(video,audio_1)
-    return 
+    data = request.get_json()
+    if("video" in data):
+        if data["video"].startswith('data:video'):
+            data["video"] = data["video"].split(',')[1]
+
+        # Decode the base64 string
+        video_data = base64.b64decode(data["video"])
+
+        # Write the decoded bytes to a file
+        with open("Videos/video.mp4", 'wb') as f:
+            f.write(video_data)
+
+        text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
+
+        openai.api_key = "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"
+        client = OpenAI(api_key="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")      
+
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])        
+
+        return jsonify(response.choices[0].message.content)
+    # app.config['UPLOAD_FOLDER']="./Videos"
+    # f = request.files['file']
+    # f.filename = "Video.mp4"
+    # f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
+    #text = video_summarizer(video,audio_1)
 
 if __name__ == "__main__":
     app.run(debug=True)
