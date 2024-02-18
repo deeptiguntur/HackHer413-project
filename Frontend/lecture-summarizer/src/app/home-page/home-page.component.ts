@@ -7,11 +7,12 @@ import { AppService } from '../app.service';
   styleUrl: './home-page.component.scss'
 })
 export class HomePageComponent {
-  url: any;
+  urlVideo: any = null;
+  urlPDF: any = null;
   format: any;
   
   constructor(private appService: AppService) {}
-  
+
   onSelectFile(event: any) {
     const file = event.target.files && event.target.files[0];
     if (file) {
@@ -23,15 +24,28 @@ export class HomePageComponent {
         this.format = 'video';
       }
       reader.onload = (event) => {
-        this.url = (<FileReader>event.target).result;
-        console.log(this.url)
+        this.urlVideo = (<FileReader>event.target).result;
+        console.log(this.urlVideo)
+      }
+    }
+  }
+
+  pdfUpload(event: any) {
+    const file = event.target.files && event.target.files[0];
+    if (file) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        this.urlPDF = (<FileReader>event.target).result;
+        console.log(this.urlPDF)
       }
     }
   }
 
   generateText() {
     const data = {
-      "video": this.url
+      "video": this.urlVideo ? this.urlVideo : null,
+      "PDF": this.urlPDF ? this.urlPDF : null
     }
     this.appService.uploadData(data).subscribe(data => {
       console.log(data);

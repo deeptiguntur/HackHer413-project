@@ -4,13 +4,13 @@
         <span class="desc">Upload either a lecture video or pdf or both and generate the summaries in seconds.</span>
     </div>
     <div class="upload">
-        <video [src]="url" *ngIf="format==='video' && url" height="200" controls></video>
+        <video [src]="urlVideo" *ngIf="format==='video' && urlVideo" height="200" controls></video>
         <label class="upload-btn">
             <input type='file' (change)="onSelectFile($event)"/>
             <i class="fa fa-cloud-upload"></i> Upload Video
         </label>
         <label class="upload-btn-pdf">
-            <input type='file' (change)="onSelectFile($event)"/>
+            <input type='file' (change)="pdfUpload($event)"/>
             <i class="fa fa-cloud-upload"></i> Upload PDF
         </label>
     </div>
