@@ -67,8 +67,8 @@ def home():
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
         print(text)
 
-        openai.api_key = "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"
-        client = OpenAI(api_key="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")      
+        openai.api_key = "API_KEY"
+        client = OpenAI(api_key="API_KEY")      
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
