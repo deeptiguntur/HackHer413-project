@@ -66,9 +66,11 @@ def home():
             f.write(video_data)
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
-
-        openai.api_key = "API_KEY"
-        client = OpenAI(api_key="API_KEY")      
+        file_path = 'API_KEY.txt'
+        with open(file_path, 'r') as file:
+            api_key = file.read().strip() 
+        openai.api_key = api_key
+        client = OpenAI(api_key=api_key)      
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
@@ -77,6 +79,9 @@ def home():
             {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])        
 
         return jsonify(response.choices[0].message.content)
+    
+    if("PDF" in data):
+        
     # app.config['UPLOAD_FOLDER']="./Videos"
     # f = request.files['file']
     # f.filename = "Video.mp4"
