@@ -9,7 +9,9 @@ import { AppService } from '../app.service';
 export class HomePageComponent {
   url: any;
   format: any;
+  
   constructor(private appService: AppService) {}
+  
   onSelectFile(event: any) {
     const file = event.target.files && event.target.files[0];
     if (file) {
