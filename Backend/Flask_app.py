@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request,jsonify
-from flask import send_from_directory
-from werkzeug.utils import secure_filename
+from flask import Flask, request,jsonify
+# from flask import send_from_directory
+# from werkzeug.utils import secure_filename
 from moviepy.editor import *
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 from datasets import load_dataset
-import os
 import base64
 from flask_cors import CORS, cross_origin
 import openai
@@ -76,17 +75,12 @@ def home():
         model="gpt-3.5-turbo-0125",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])        
+            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])   
+        res = {
+            "msg": response.choices[0].message.content
+        }    
 
-        return jsonify(response.choices[0].message.content)
+        return res
     
-    if("PDF" in data):
-        
-    # app.config['UPLOAD_FOLDER']="./Videos"
-    # f = request.files['file']
-    # f.filename = "Video.mp4"
-    # f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-    #text = video_summarizer(video,audio_1)
-
 if __name__ == "__main__":
     app.run(debug=True)
