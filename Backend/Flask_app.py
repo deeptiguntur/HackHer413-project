@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request,jsonify
-from flask import send_from_directory
-from werkzeug.utils import secure_filename
+from flask import Flask, request,jsonify
+# from flask import send_from_directory
+# from werkzeug.utils import secure_filename
 from moviepy.editor import *
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 from datasets import load_dataset
-import os
 import base64
 from flask_cors import CORS, cross_origin
 import openai
@@ -28,7 +27,7 @@ def home():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     torch.cuda.empty_cache()
-    model_id = "openai/whisper-large-v3"
+    model_id = "openai/whisper-base"
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
@@ -66,22 +65,21 @@ def home():
             f.write(video_data)
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
+        print(text)
 
-        openai.api_key = "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"
-        client = OpenAI(api_key="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")      
+        openai.api_key = "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"
+        client = OpenAI(api_key="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")      
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])        
+            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])   
+        res = {
+            "msg": response.choices[0].message.content
+        }    
 
-        return jsonify(response.choices[0].message.content)
-    # app.config['UPLOAD_FOLDER']="./Videos"
-    # f = request.files['file']
-    # f.filename = "Video.mp4"
-    # f.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(f.filename)))
-    #text = video_summarizer(video,audio_1)
-
+        return res
+    
 if __name__ == "__main__":
     app.run(debug=True)
