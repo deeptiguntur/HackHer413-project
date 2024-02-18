@@ -5,17 +5,26 @@
     input[type="file"] {
         display: none;
     }
+    .spinner {
+        margin: auto;
+    }
+    svg {
+        position: absolute;
+        width: 6rem;
+        height: 6rem;
+        margin-top: 24rem;
+    }
+    .heading {
+        font-size: 2.5rem;
+        display: flex;
+        margin: auto;
+        margin-bottom: 1rem;
+    }
     .heading-area {
         display: flex;
         flex-direction: column;
         justify-content: center;
         margin: 1rem auto 5rem auto;
-        .heading {
-            font-size: 2.5rem;
-            display: flex;
-            margin: auto;
-            margin-bottom: 1rem;
-        }
         .desc {
             font-size: 1.5rem;
         }
@@ -75,5 +84,9 @@
         &:active {
             background-color: #2ab684;
         }
+    }
+    .summary {
+        font-size: 1.5rem;
+        margin-top: 1rem;
     }
 }

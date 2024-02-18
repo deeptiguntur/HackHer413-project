@@ -10,6 +10,8 @@ export class HomePageComponent {
   urlVideo: any = null;
   urlPDF: any = null;
   format: any;
+  spinner = false;
+  summary = null;
   
   constructor(private appService: AppService) {}
 
@@ -47,8 +49,14 @@ export class HomePageComponent {
       "video": this.urlVideo ? this.urlVideo : null,
       "PDF": this.urlPDF ? this.urlPDF : null
     }
+    this.spinner = true;
+    this.summary = null;
     this.appService.uploadData(data).subscribe(data => {
       console.log(data);
+      this.summary = data.msg;
+      this.spinner = false;
+    }, (error) => {
+      this.spinner = false;
     })
   }
 }
