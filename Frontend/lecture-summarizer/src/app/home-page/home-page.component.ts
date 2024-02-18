@@ -11,7 +11,7 @@ export class HomePageComponent {
   urlPDF: any = null;
   format: any;
   spinner = false;
-  summary = null;
+  summary: any = null;
   
   constructor(private appService: AppService) {}
 
@@ -59,4 +59,5 @@ export class HomePageComponent {
       this.spinner = false;
     })
   }
+
 }

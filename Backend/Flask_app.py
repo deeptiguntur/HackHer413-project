@@ -84,7 +84,48 @@ def home():
     with open(file_path, 'r') as file:
         api_key = file.read().strip() 
 
+    openai.api_key = api_key
+    client = OpenAI(api_key=api_key)  
+
     data = request.get_json()
+    if(("video" in data and data["video"]) and "PDF" in data and data["PDF"]):
+        if data["video"].startswith('data:video'):
+            data["video"] = data["video"].split(',')[1]
+
+        # Decode the base64 string
+        video_data = base64.b64decode(data["video"])
+
+        # Write the decoded bytes to a file
+        with open("Videos/video.mp4", 'wb') as f:
+            f.write(video_data)
+
+        video_text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
+
+        base64_data = data["PDF"].split(',', 1)[-1]
+
+        # Remove any potential unwanted characters (e.g., newlines, spaces)
+        base64_data_cleaned = base64_data.replace("\n", "").replace(" ", "")
+
+        # Decode the cleaned base64 string
+        decoded_data = base64.b64decode(base64_data_cleaned)
+
+        with open("PDFs/text.pdf", 'wb') as pdf_file:
+            pdf_file.write(decoded_data)
+        
+        pdf_text = extract_text_from_pdf_ignoring_footers("PDFs/text.pdf")
+
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Video transcript:"+video_text+" PDF file:"+pdf_text+" Summarize the transcript and the PDF together and explain all of the points."}])   
+        res = {
+            "msg": response.choices[0].message.content
+        }    
+
+        return res        
+
+
     if("video" in data and data["video"]):
         if data["video"].startswith('data:video'):
             data["video"] = data["video"].split(',')[1]
@@ -98,8 +139,7 @@ def home():
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
 
-        openai.api_key = api_key
-        client = OpenAI(api_key=api_key)      
+    
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
@@ -125,16 +165,13 @@ def home():
             pdf_file.write(decoded_data)
         
         full_text = extract_text_from_pdf_ignoring_footers("PDFs/text.pdf")
-
-        
-        openai.api_key = api_key
-        client = OpenAI(api_key=api_key)      
+  
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": full_text+" Summarize the entire presentation"}])   
+            {"role": "user", "content": full_text+" Summarize the entire presentation, give detailed information and explain"}])   
         res = {
             "msg": response.choices[0].message.content
         }    
