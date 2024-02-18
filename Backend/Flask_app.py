@@ -87,6 +87,25 @@ def home():
     openai.api_key = api_key
     client = OpenAI(api_key=api_key)  
 
+    def api_calls(prompt,text):
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt+" "+text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}]) 
+        
+        return response.choices[0].message.content
+
+    def word_splitter(text):
+        video_text_array = [word for word in text.split()]
+        word_limit = 2000
+        num_chunks = len(video_text_array) // word_limit + (1 if len(video_text_array) % word_limit else 0)
+    
+        # Create chunks using list slicing
+        chunks = [' '.join(video_text_array[i * word_limit : (i + 1) * word_limit]) for i in range(num_chunks)]
+
+        return chunks        
+
     data = request.get_json()
     if(("video" in data and data["video"]) and "PDF" in data and data["PDF"]):
         if data["video"].startswith('data:video'):
@@ -101,6 +120,12 @@ def home():
 
         video_text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
 
+        chunks = word_splitter(video_text)
+
+        response = ""
+        for chunk in chunks:
+            response+=api_calls("Transcript:",chunk)
+
         base64_data = data["PDF"].split(',', 1)[-1]
 
         # Remove any potential unwanted characters (e.g., newlines, spaces)
@@ -114,13 +139,13 @@ def home():
         
         pdf_text = extract_text_from_pdf_ignoring_footers("PDFs/text.pdf")
 
-        response = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Video transcript:"+video_text+" PDF file:"+pdf_text+" Summarize the transcript and the PDF together and explain all of the points."}])   
+        response+="\n"
+        chunks = word_splitter(pdf_text)
+        for chunk in chunks:
+            response+=api_calls("PDF:",chunk)
+  
         res = {
-            "msg": response.choices[0].message.content
+            "msg": response
         }    
 
         return res        
@@ -139,15 +164,13 @@ def home():
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
 
-    
+        chunks = word_splitter(text)
 
-        response = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": text+" Summarize this text based on the following: Highlight the summary as bullet points and the break the summary using various headings"}])   
+        response = ""
+        for chunk in chunks:
+            response+=api_calls("Transcript:",chunk)    
         res = {
-            "msg": response.choices[0].message.content
+            "msg": response
         }    
 
         return res
@@ -167,14 +190,14 @@ def home():
         full_text = extract_text_from_pdf_ignoring_footers("PDFs/text.pdf")
   
 
-        response = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": full_text+" Summarize the entire presentation, give detailed information and explain"}])   
+        chunks = word_splitter(full_text)
+
+        response = ""
+        for chunk in chunks:
+            response+=api_calls("PDF:",chunk)    
         res = {
-            "msg": response.choices[0].message.content
-        }    
+            "msg": response
+        }  
 
         return res
         
