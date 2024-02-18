@@ -28,7 +28,7 @@ def home():
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     torch.cuda.empty_cache()
-    model_id = "openai/whisper-large-v3"
+    model_id = "openai/whisper-base"
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
@@ -67,8 +67,8 @@ def home():
 
         text = video_summarizer("Videos/video.mp4","Videos/audio.mp3")
 
-        openai.api_key = "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"
-        client = OpenAI(api_key="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")      
+        openai.api_key = "API_KEY"
+        client = OpenAI(api_key="API_KEY")      
 
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
